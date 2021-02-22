@@ -5,7 +5,7 @@ import argparse
 from kitti_odometry import KittiEvalOdom
 
 parser = argparse.ArgumentParser(description='KITTI evaluation')
-parser.add_argument('--result', type=str, required=True,
+parser.add_argument('--dir', type=str, required=True,
                     help="Result directory")
 parser.add_argument('--align', type=str, 
                     choices=['scale', 'scale_7dof', '7dof', '6dof'],
@@ -19,8 +19,12 @@ parser.add_argument('--seqs',
 args = parser.parse_args()
 
 eval_tool = KittiEvalOdom()
-gt_dir = "dataset/kitti_odom/gt_poses/"
-result_dir = args.result
+main_dir = args.dir
+gt_dir = main_dir+"/gt"
+result_dir = main_dir+"/est"
+print("gt dir "+gt_dir)
+print("results dir "+result_dir)
+
 
 continue_flag = input("Evaluate result in {}? [y/n]".format(result_dir))
 if continue_flag == "y":

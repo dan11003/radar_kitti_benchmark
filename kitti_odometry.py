@@ -91,6 +91,7 @@ class KittiEvalOdom():
         Returns:
             poses (dict): {idx: 4x4 array}
         """
+        print("load" + file_name)
         f = open(file_name, 'r')
         s = f.readlines()
         f.close()
@@ -278,7 +279,7 @@ class KittiEvalOdom():
 
         fig = plt.figure()
         ax = plt.gca()
-        ax.set_aspect('equal')
+        #ax.set_aspect('equal')
 
         for key in plot_keys:
             pos_xz = []
@@ -286,15 +287,15 @@ class KittiEvalOdom():
             for frame_idx in frame_idx_list:
                 # pose = np.linalg.inv(poses_dict[key][frame_idx_list[0]]) @ poses_dict[key][frame_idx]
                 pose = poses_dict[key][frame_idx]
-                pos_xz.append([pose[0, 3],  pose[2, 3]])
+                pos_xz.append([pose[0, 3],  pose[1, 3]])
             pos_xz = np.asarray(pos_xz)
-            plt.plot(pos_xz[:, 0],  pos_xz[:, 1], label=key)
+            plt.plot(-pos_xz[:, 0],  pos_xz[:, 1], label=key)
 
         plt.legend(loc="upper right", prop={'size': fontsize_})
         plt.xticks(fontsize=fontsize_)
         plt.yticks(fontsize=fontsize_)
         plt.xlabel('x (m)', fontsize=fontsize_)
-        plt.ylabel('z (m)', fontsize=fontsize_)
+        plt.ylabel('y (m)', fontsize=fontsize_)
         fig.set_size_inches(10, 10)
         png_title = "sequence_{:02}".format(seq)
         fig_pdf = self.plot_path_dir + "/" + png_title + ".pdf"
@@ -499,7 +500,7 @@ class KittiEvalOdom():
                 - None: Evalute all available seqs in result_dir
                 - list: list of sequence indexs to be evaluated
         """
-        seq_list = ["{:02}".format(i) for i in range(0, 11)]
+        seq_list = ["{:02}".format(i) for i in range(0, 35)]
 
         # Initialization
         self.gt_dir = gt_dir
@@ -526,10 +527,10 @@ class KittiEvalOdom():
         # Create evaluation list
         if seqs is None:
             available_seqs = sorted(glob(os.path.join(result_dir, "*.txt")))
+            #print(available_seqs)
             self.eval_seqs = [int(i[-6:-4]) for i in available_seqs if i[-6:-4] in seq_list]
         else:
             self.eval_seqs = seqs
-
         # evaluation
         for i in self.eval_seqs:
             self.cur_seq = i
@@ -537,7 +538,11 @@ class KittiEvalOdom():
             self.cur_seq = '{:02}'.format(i)
             file_name = '{:02}.txt'.format(i)
 
+            print("patss: "+ file_name)
+            print("dir: "+ result_dir)
             poses_result = self.load_poses_from_txt(result_dir+"/"+file_name)
+
+            #print("poses: "+poses_result)
             poses_gt = self.load_poses_from_txt(self.gt_dir + "/" + file_name)
             self.result_file_name = result_dir+file_name
 
@@ -600,6 +605,7 @@ class KittiEvalOdom():
             print("RPE (deg): ", rpe_rot * 180 /np.pi)
 
             # Plotting
+            #print(poses_gt)
             self.plot_trajectory(poses_gt, poses_result, i)
             self.plot_error(avg_segment_errs, i)
 
