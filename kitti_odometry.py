@@ -420,7 +420,9 @@ class KittiEvalOdom():
             pred (4x4 array dict): predicted poses
         Returns:
             rpe_trans
+            rpe_trans_dev
             rpe_rot
+            rpe_rot_dev
         """
         trans_errors = []
         rot_errors = []
@@ -439,8 +441,10 @@ class KittiEvalOdom():
         # rpe_trans = np.sqrt(np.mean(np.asarray(trans_errors) ** 2))
         # rpe_rot = np.sqrt(np.mean(np.asarray(rot_errors) ** 2))
         rpe_trans = np.mean(np.asarray(trans_errors))
+        rpe_trans_dev = np.std(np.asarray(trans_errors))
         rpe_rot = np.mean(np.asarray(rot_errors))
-        return rpe_trans, rpe_rot
+        rpe_rot_dev = np.std(np.asarray(rot_errors))
+        return rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev
 
     def scale_optimization(self, gt, pred):
         """ Optimize scaling factor
@@ -472,14 +476,16 @@ class KittiEvalOdom():
             seq (int): sequence number
             errs (list): [ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot]
         """
-        ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot = errs
+        ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, trans_dev, rot_dev = errs
         lines = []
         lines.append("Sequence: \t {} \n".format(seq) )
         lines.append("Trans. err. (%): \t {:.3f} \n".format(ave_t_err*100))
         lines.append("Rot. err. (deg/100m): \t {:.3f} \n".format(ave_r_err/np.pi*180*100))
         lines.append("ATE (m): \t {:.3f} \n".format(ate))
         lines.append("RPE (m): \t {:.3f} \n".format(rpe_trans))
+        lines.append("RPE-dev (m): \t {:.3f} \n".format(trans_dev))
         lines.append("RPE (deg): \t {:.3f} \n\n".format(rpe_rot * 180 /np.pi))
+        lines.append("RPE-dev (deg): \t {:.3f} \n\n".format(rot_dev * 180 /np.pi))
         for line in lines:
             f.writelines(line)
 
@@ -509,6 +515,8 @@ class KittiEvalOdom():
         seq_ate = []
         seq_rpe_trans = []
         seq_rpe_rot = []
+        seq_rpe_trans_dev = []
+        seq_rpe_rot_dev = []
 
         # Create result directory
         error_dir = result_dir + "/errors"
@@ -598,11 +606,15 @@ class KittiEvalOdom():
             print("ATE (m): ", ate)
 
             # Compute RPE
-            rpe_trans, rpe_rot = self.compute_RPE(poses_gt, poses_result)
+            rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev = self.compute_RPE(poses_gt, poses_result)
             seq_rpe_trans.append(rpe_trans)
             seq_rpe_rot.append(rpe_rot)
+            seq_rpe_trans_dev.append(rpe_trans_dev)
+            seq_rpe_rot_dev.append(rpe_rot_dev)
             print("RPE (m): ", rpe_trans)
             print("RPE (deg): ", rpe_rot * 180 /np.pi)
+            print("RPE dev (m): ", rpe_trans_dev)
+            print("RPE rot dev(deg): ", rpe_rot_dev * 180 /np.pi)
 
             # Plotting
             #print(poses_gt)
@@ -610,7 +622,7 @@ class KittiEvalOdom():
             self.plot_error(avg_segment_errs, i)
 
             # Save result summary
-            self.write_result(f, i, [ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot])
+            self.write_result(f, i, [ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev])
             
         f.close()    
 
@@ -621,3 +633,5 @@ class KittiEvalOdom():
             print("{0:.2f}".format(seq_ate[i]))
             print("{0:.3f}".format(seq_rpe_trans[i]))
             print("{0:.3f}".format(seq_rpe_rot[i] * 180 / np.pi))
+            print("{0:.3f}".format(seq_rpe_trans_dev[i]))
+            print("{0:.3f}".format(seq_rpe_rot_dev[i] * 180 / np.pi))
