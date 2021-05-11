@@ -5,7 +5,11 @@ from matplotlib import pyplot as plt
 import numpy as np
 import os
 from glob import glob
+from numpy import asarray
+from numpy import savetxt
+import math
 
+from scipy.spatial.transform import Rotation as R
 
 def scale_lse_solver(X, Y):
     """Least-sqaure-error solver
@@ -413,7 +417,7 @@ class KittiEvalOdom():
         ate = np.sqrt(np.mean(np.asarray(errors) ** 2)) 
         return ate
     
-    def compute_RPE(self, gt, pred):
+    def compute_RPE(self, gt, pred, output_dir):
         """Compute RPE
         Args:
             gt (4x4 array dict): ground-truth poses
@@ -424,8 +428,11 @@ class KittiEvalOdom():
             rpe_rot
             rpe_rot_dev
         """
-        trans_errors = []
-        rot_errors = []
+        trans_errors_abs = []
+        rot_errors_abs = []
+        trans_errors_x = []
+        trans_errors_y = []
+        rot_errors_ez = []
         for i in list(pred.keys())[:-1]:
             gt1 = gt[i]
             gt2 = gt[i+1]
@@ -435,16 +442,29 @@ class KittiEvalOdom():
             pred2 = pred[i+1]
             pred_rel = np.linalg.inv(pred1) @ pred2
             rel_err = np.linalg.inv(gt_rel) @ pred_rel
-            
-            trans_errors.append(self.translation_error(rel_err))
-            rot_errors.append(self.rotation_error(rel_err))
+
+           
+            trans_errors_x.append(rel_err[0, 3])
+            trans_errors_y.append(rel_err[1, 3])
+            rotmat = rel_err[0:3, 0:3]
+            r = (math.atan2(rotmat[1,0], rel_err[0,0]))*180/math.pi
+            rot_errors_ez.append(r)
+            trans_errors_abs.append(self.translation_error(rel_err))
+            rot_errors_abs.append(self.rotation_error(rel_err))
         # rpe_trans = np.sqrt(np.mean(np.asarray(trans_errors) ** 2))
         # rpe_rot = np.sqrt(np.mean(np.asarray(rot_errors) ** 2))
-        rpe_trans = np.mean(np.asarray(trans_errors))
-        rpe_trans_dev = np.std(np.asarray(trans_errors))
-        rpe_rot = np.mean(np.asarray(rot_errors))
-        rpe_rot_dev = np.std(np.asarray(rot_errors))
-        return rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev
+        rpe_trans = np.mean(np.asarray(trans_errors_abs))
+        rpe_trans_dev = np.std(np.asarray(trans_errors_abs))
+        rpe_rot = np.mean(np.asarray(rot_errors_abs))
+        rpe_rot_dev = np.std(np.asarray(rot_errors_abs))
+        bias_x = np.mean(np.asarray(trans_errors_x))
+        bias_y = np.mean(np.asarray(trans_errors_y))
+        bias_theta = np.mean(np.asarray(rot_errors_ez))
+
+        savetxt(output_dir+"/_rpe_trans_x.txt", trans_errors_x, delimiter=',')
+        savetxt(output_dir+"/_rpe_trans_y.txt", trans_errors_y, delimiter=',')
+        savetxt(output_dir+"/_rpe_rot.txt", rot_errors_ez, delimiter=',')
+        return rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev, bias_x, bias_y, bias_theta
 
     def scale_optimization(self, gt, pred):
         """ Optimize scaling factor
@@ -554,6 +574,7 @@ class KittiEvalOdom():
             poses_gt = self.load_poses_from_txt(self.gt_dir + "/" + file_name)
             self.result_file_name = result_dir+file_name
 
+
             # Pose alignment to first frame
             idx_0 = sorted(list(poses_result.keys()))[0]
             pred_0 = poses_result[idx_0]
@@ -606,7 +627,7 @@ class KittiEvalOdom():
             print("ATE (m): ", ate)
 
             # Compute RPE
-            rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev = self.compute_RPE(poses_gt, poses_result)
+            rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev, bias_x, bias_y, bias_theta = self.compute_RPE(poses_gt, poses_result,self.plot_path_dir)
             seq_rpe_trans.append(rpe_trans)
             seq_rpe_rot.append(rpe_rot)
             seq_rpe_trans_dev.append(rpe_trans_dev)
@@ -615,6 +636,11 @@ class KittiEvalOdom():
             print("RPE (deg): ", rpe_rot * 180 /np.pi)
             print("RPE dev (m): ", rpe_trans_dev)
             print("RPE rot dev(deg): ", rpe_rot_dev * 180 /np.pi)
+            print("------ BIAS -------")
+            print("bias_x", bias_x)
+            print("bias_y", bias_y)
+            print("bias_theta", bias_theta)
+
 
             # Plotting
             #print(poses_gt)
