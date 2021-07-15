@@ -494,18 +494,23 @@ class KittiEvalOdom():
         Args:
             f (IOWrapper)
             seq (int): sequence number
-            errs (list): [ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot]
+            errs (list): [ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, bias_x, bias_y, bias_theta]
         """
-        ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, trans_dev, rot_dev = errs
+        ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, trans_dev, rot_dev, bias_x, bias_y, bias_theta = errs
         lines = []
-        lines.append("Sequence: \t {} \n".format(seq) )
-        lines.append("Trans. err. (%): \t {:.3f} \n".format(ave_t_err*100))
-        lines.append("Rot. err. (deg/100m): \t {:.3f} \n".format(ave_r_err/np.pi*180*100))
-        lines.append("ATE (m): \t {:.3f} \n".format(ate))
-        lines.append("RPE (m): \t {:.3f} \n".format(rpe_trans))
-        lines.append("RPE-dev (m): \t {:.3f} \n".format(trans_dev))
-        lines.append("RPE (deg): \t {:.3f} \n\n".format(rpe_rot * 180 /np.pi))
-        lines.append("RPE-dev (deg): \t {:.3f} \n\n".format(rot_dev * 180 /np.pi))
+        #lines.append("Sequence, Transl-err%, Rot-err, ATE(m), PE(m), RPE(deg), RPE-dev(m), RPE-dev(deg), bias-x, bias-y, bias-theta\n")
+        #lines.append("{}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}".format(seq, ave_t_err*100, ave_r_err/np.pi*180*100, ate, rpe_trans, trans_dev, rpe_rot * 180 /np.pi, rot_dev * 180 /np.pi, bias_x * 180 /np.pi, bias_y * 180 /np.pi, bias_theta * 180 /np.pi))
+        lines.append("Sequence-nr, {} \n".format(seq) )
+        lines.append("Trans.err.(%), {:.3f} \n".format(ave_t_err*100))
+        lines.append("Rot.err.(deg/100m), {:.3f} \n".format(ave_r_err/np.pi*180*100))
+        lines.append("ATE(m), {:.3f} \n".format(ate))
+        lines.append("RPE(m), {:.3f} \n".format(rpe_trans))
+        lines.append("RPE-dev(m), {:.3f} \n".format(trans_dev))
+        lines.append("RPE(deg), {:.3f} \n".format(rpe_rot * 180 /np.pi))
+        lines.append("RPE-dev(deg), {:.3f} \n".format(rot_dev * 180 /np.pi))
+        lines.append("bias-x(m), {:.3f} \n".format(bias_x))
+        lines.append("bias-y(m), {:.3f} \n".format(bias_y ))
+        lines.append("bias-theta(deg), {:.3f} \n".format(bias_theta))
         for line in lines:
             f.writelines(line)
 
@@ -615,7 +620,7 @@ class KittiEvalOdom():
 
             # compute overall error
             ave_t_err, ave_r_err = self.compute_overall_err(seq_err)
-            print("Sequence: " + str(i))
+            print("Sequence-nr: " + str(i))
             print("Translational error (%): ", ave_t_err*100)
             print("Rotational error (deg/100m): ", ave_r_err/np.pi*180*100)
             ave_t_errs.append(ave_t_err)
@@ -636,7 +641,6 @@ class KittiEvalOdom():
             print("RPE (deg): ", rpe_rot * 180 /np.pi)
             print("RPE dev (m): ", rpe_trans_dev)
             print("RPE rot dev(deg): ", rpe_rot_dev * 180 /np.pi)
-            print("------ BIAS -------")
             print("bias_x", bias_x)
             print("bias_y", bias_y)
             print("bias_theta", bias_theta)
@@ -648,7 +652,7 @@ class KittiEvalOdom():
             self.plot_error(avg_segment_errs, i)
 
             # Save result summary
-            self.write_result(f, i, [ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev])
+            self.write_result(f, i, [ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev, bias_x, bias_y, bias_theta])
             
         f.close()    
 
@@ -661,3 +665,6 @@ class KittiEvalOdom():
             print("{0:.3f}".format(seq_rpe_rot[i] * 180 / np.pi))
             print("{0:.3f}".format(seq_rpe_trans_dev[i]))
             print("{0:.3f}".format(seq_rpe_rot_dev[i] * 180 / np.pi))
+            print("{0:.3f}".format(bias_x))
+            print("{0:.3f}".format(bias_y))
+            print("{0:.3f}".format(bias_theta))

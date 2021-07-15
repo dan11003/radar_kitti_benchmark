@@ -16,6 +16,10 @@ parser.add_argument('--seqs',
                     type=int, 
                     help="sequences to be evaluated",
                     default=None)
+parser.add_argument('--force', type=str,
+                    choices=['yes', 'no'],
+                    default='no',
+                    help="do not ask for user input")
 args = parser.parse_args()
 
 eval_tool = KittiEvalOdom()
@@ -25,8 +29,11 @@ result_dir = main_dir+"/est"
 print("gt dir "+gt_dir)
 print("results dir "+result_dir)
 
+if args.force=='yes':
+    continue_flag = 'y'
+else:
+    continue_flag = input("Evaluate result in {}? [y/n]".format(result_dir))
 
-continue_flag = input("Evaluate result in {}? [y/n]".format(result_dir))
 if continue_flag == "y":
     eval_tool.eval(
         gt_dir,
