@@ -283,7 +283,7 @@ class KittiEvalOdom():
 
         fig = plt.figure()
         ax = plt.gca()
-        #ax.set_aspect('equal')
+        ax.set_aspect('equal')
 
         for key in plot_keys:
             pos_xz = []
@@ -293,16 +293,43 @@ class KittiEvalOdom():
                 pose = poses_dict[key][frame_idx]
                 pos_xz.append([pose[0, 3],  pose[1, 3]])
             pos_xz = np.asarray(pos_xz)
-            plt.plot(-pos_xz[:, 0],  pos_xz[:, 1], label=key)
+            plt.plot(pos_xz[:, 0],  pos_xz[:, 1], label=key)
 
-        plt.legend(loc="upper right", prop={'size': fontsize_})
+        plt.legend( loc='upper right', prop={'size': fontsize_}) #
         plt.xticks(fontsize=fontsize_)
+        plt.xticks(rotation=45)
         plt.yticks(fontsize=fontsize_)
         plt.xlabel('x (m)', fontsize=fontsize_)
         plt.ylabel('y (m)', fontsize=fontsize_)
         fig.set_size_inches(10, 10)
         png_title = "sequence_{:02}".format(seq)
-        fig_pdf = self.plot_path_dir + "/" + png_title + ".pdf"
+        fig_pdf = self.plot_path_dir + "/" + png_title + "_.pdf"
+        plt.savefig(fig_pdf, bbox_inches='tight', pad_inches=0)
+        plt.close(fig)
+
+        fig = plt.figure()
+        ax = plt.gca()
+        ax.set_aspect('equal')
+
+        for key in plot_keys:
+            pos_xz = []
+            frame_idx_list = sorted(poses_dict["Ours"].keys())
+            for frame_idx in frame_idx_list:
+                # pose = np.linalg.inv(poses_dict[key][frame_idx_list[0]]) @ poses_dict[key][frame_idx]
+                pose = poses_dict[key][frame_idx]
+                pos_xz.append([pose[0, 3],  pose[1, 3]])
+            pos_xz = np.asarray(pos_xz)
+            plt.plot(pos_xz[:, 1],  pos_xz[:, 0], label=key)
+
+        plt.legend( loc='upper right', prop={'size': fontsize_}) #
+        plt.xticks(fontsize=fontsize_)
+        plt.xticks(rotation=45)
+        plt.yticks(fontsize=fontsize_)
+        plt.xlabel('x (m)', fontsize=fontsize_)
+        plt.ylabel('y (m)', fontsize=fontsize_)
+        fig.set_size_inches(10, 10)
+        png_title = "sequence_{:02}".format(seq)
+        fig_pdf = self.plot_path_dir + "/" + png_title + "_flip.pdf"
         plt.savefig(fig_pdf, bbox_inches='tight', pad_inches=0)
         plt.close(fig)
 
