@@ -12,9 +12,9 @@
 #export SEQUENCE="/home/daniel/rosbag/oxford-eval-sequences/2019-01-18-15-20-12-radar-oxford-10k/radar/eval2"  #seq 1
 #export SEQUENCE="/home/daniel/rosbag/oxford-eval-sequences/2019-01-18-14-14-42-radar-oxford-10k/radar/eval"  #seq 1
 
-export SEQUENCE="/home/daniel/rosbag/Mulran/trash_eval/2021-07-24_12:14"
+#export SEQUENCE="/home/daniel/rosbag/oxford-eval-sequences/eval/RANGE_RES_0.04328/"
 #export SEQUENCE="/home/daniel/rosbag/oxford-eval-sequences/2019-01-10-12-32-52-radar-oxford-10k/radar/eval"
-
+export SEQUENCE="/home/daniel/rosbag/oxford-eval-sequences/eval/2022-03-30_14:23/"
 
 mkdir -p $SEQUENCE/est
 python3 eval_odom.py --dir $SEQUENCE --align 6dof

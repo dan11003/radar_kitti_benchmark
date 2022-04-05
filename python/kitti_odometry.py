@@ -160,6 +160,18 @@ class KittiEvalOdom():
         dz = pose_error[2, 3]
         trans_error = np.sqrt(dx**2+dy**2+dz**2)
         return trans_error
+    def squared_translation_error(self, pose_error):
+        """Compute translation error
+        Args:
+            pose_error (4x4 array): relative pose error
+        Returns:
+            trans_error (float): translation error
+        """
+        dx = pose_error[0, 3]
+        dy = pose_error[1, 3]
+        dz = pose_error[2, 3]
+        trans_error = dx**2+dy**2+dz**2
+        return trans_error
 
     def last_frame_from_segment_length(self, dist, first_frame, length):
         """Find frame (index) that away from the first_frame with
@@ -460,6 +472,7 @@ class KittiEvalOdom():
         trans_errors_x = []
         trans_errors_y = []
         rot_errors_ez = []
+        trans_errors_squared = []
         for i in list(pred.keys())[:-1]:
             gt1 = gt[i]
             gt2 = gt[i+1]
@@ -477,9 +490,9 @@ class KittiEvalOdom():
             r = (math.atan2(rotmat[1,0], rel_err[0,0]))*180/math.pi
             rot_errors_ez.append(r)
             trans_errors_abs.append(self.translation_error(rel_err))
+            trans_errors_squared.append(self.squared_translation_error(rel_err))
             rot_errors_abs.append(self.rotation_error(rel_err))
-        # rpe_trans = np.sqrt(np.mean(np.asarray(trans_errors) ** 2))
-        # rpe_rot = np.sqrt(np.mean(np.asarray(rot_errors) ** 2))
+        rmse_trans = np.sqrt(np.mean(np.asarray(trans_errors_squared)))
         rpe_trans = np.mean(np.asarray(trans_errors_abs))
         rpe_trans_dev = np.std(np.asarray(trans_errors_abs))
         rpe_rot = np.mean(np.asarray(rot_errors_abs))
@@ -487,11 +500,11 @@ class KittiEvalOdom():
         bias_x = np.mean(np.asarray(trans_errors_x))
         bias_y = np.mean(np.asarray(trans_errors_y))
         bias_theta = np.mean(np.asarray(rot_errors_ez))
-
+        savetxt(output_dir+"/_rpe_trans_x.txt", trans_errors_x, delimiter=',')
         savetxt(output_dir+"/_rpe_trans_x.txt", trans_errors_x, delimiter=',')
         savetxt(output_dir+"/_rpe_trans_y.txt", trans_errors_y, delimiter=',')
         savetxt(output_dir+"/_rpe_rot.txt", rot_errors_ez, delimiter=',')
-        return rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev, bias_x, bias_y, bias_theta
+        return rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev, bias_x, bias_y, bias_theta, rmse_trans
 
     def scale_optimization(self, gt, pred):
         """ Optimize scaling factor
@@ -523,7 +536,7 @@ class KittiEvalOdom():
             seq (int): sequence number
             errs (list): [ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, bias_x, bias_y, bias_theta]
         """
-        ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, trans_dev, rot_dev, bias_x, bias_y, bias_theta = errs
+        ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, trans_dev, rot_dev, bias_x, bias_y, bias_theta, rmse_rpe = errs
         lines = []
         #lines.append("Sequence, Transl-err%, Rot-err, ATE(m), PE(m), RPE(deg), RPE-dev(m), RPE-dev(deg), bias-x, bias-y, bias-theta\n")
         #lines.append("{}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}".format(seq, ave_t_err*100, ave_r_err/np.pi*180*100, ate, rpe_trans, trans_dev, rpe_rot * 180 /np.pi, rot_dev * 180 /np.pi, bias_x * 180 /np.pi, bias_y * 180 /np.pi, bias_theta * 180 /np.pi))
@@ -538,6 +551,8 @@ class KittiEvalOdom():
         lines.append("bias-x(m), {:.3f} \n".format(bias_x))
         lines.append("bias-y(m), {:.3f} \n".format(bias_y ))
         lines.append("bias-theta(deg), {:.3f} \n".format(bias_theta))
+        lines.append("RMSE (m), {:.3f} \n".format(rmse_rpe))
+
         for line in lines:
             f.writelines(line)
 
@@ -659,7 +674,7 @@ class KittiEvalOdom():
             print("ATE (m): ", ate)
 
             # Compute RPE
-            rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev, bias_x, bias_y, bias_theta = self.compute_RPE(poses_gt, poses_result,self.plot_path_dir)
+            rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev, bias_x, bias_y, bias_theta, rmse_rpe = self.compute_RPE(poses_gt, poses_result,self.plot_path_dir)
             seq_rpe_trans.append(rpe_trans)
             seq_rpe_rot.append(rpe_rot)
             seq_rpe_trans_dev.append(rpe_trans_dev)
@@ -671,6 +686,8 @@ class KittiEvalOdom():
             print("bias_x", bias_x)
             print("bias_y", bias_y)
             print("bias_theta", bias_theta)
+            print("RMSE (m)", rmse_rpe)
+		
 
 
             # Plotting
@@ -679,7 +696,7 @@ class KittiEvalOdom():
             self.plot_error(avg_segment_errs, i)
 
             # Save result summary
-            self.write_result(f, i, [ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev, bias_x, bias_y, bias_theta])
+            self.write_result(f, i, [ave_t_err, ave_r_err, ate, rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev, bias_x, bias_y, bias_theta, rmse_rpe])
             
         f.close()    
 
