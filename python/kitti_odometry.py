@@ -292,7 +292,41 @@ class KittiEvalOdom():
         poses_dict = {}
         poses_dict["Ground Truth"] = poses_gt
         poses_dict["Ours"] = poses_result
+        # For oxford
 
+
+        # For others
+        fig = plt.figure()
+        ax = plt.gca()
+        ax.set_aspect('equal')
+
+        for key in plot_keys:
+            pos_xz = []
+            frame_idx_list = sorted(poses_dict["Ours"].keys())
+            for frame_idx in frame_idx_list:
+                # pose = np.linalg.inv(poses_dict[key][frame_idx_list[0]]) @ poses_dict[key][frame_idx]
+                pose = poses_dict[key][frame_idx]
+                pos_xz.append([pose[0, 3],  pose[1, 3]])
+            pos_xz = np.asarray(pos_xz)
+            plt.plot(pos_xz[:, 0],  -1*pos_xz[:, 1], label=key)
+
+        frame_idx_list = sorted(poses_dict["Ours"].keys())
+        pose_first=poses_dict["Ours"][frame_idx_list[0]]
+        plt.plot( pose_first[0,0], pose_first[0,1], "k+",markersize=12,markeredgewidth=2)
+        plt.legend( loc='upper right', prop={'size': fontsize_}) #
+        plt.xticks(fontsize=fontsize_)
+        plt.xticks(rotation=45)
+        plt.yticks(fontsize=fontsize_)
+        plt.xlabel('x (m)', fontsize=fontsize_)
+        plt.ylabel('y (m)', fontsize=fontsize_)
+        fig.set_size_inches(10, 10)
+        png_title = "sequence_{:02}".format(seq)
+        fig_pdf = self.plot_path_dir + "/" + png_title + "_orig.pdf"
+        plt.savefig(fig_pdf, bbox_inches='tight', pad_inches=0)
+        plt.close(fig)
+
+
+        # For others
         fig = plt.figure()
         ax = plt.gca()
         ax.set_aspect('equal')
@@ -307,6 +341,9 @@ class KittiEvalOdom():
             pos_xz = np.asarray(pos_xz)
             plt.plot(pos_xz[:, 0],  pos_xz[:, 1], label=key)
 
+        frame_idx_list = sorted(poses_dict["Ours"].keys())
+        pose_first=poses_dict["Ours"][frame_idx_list[0]]
+        plt.plot( pose_first[0,0], pose_first[0,1], "k+",markersize=15,markeredgewidth=2)
         plt.legend( loc='upper right', prop={'size': fontsize_}) #
         plt.xticks(fontsize=fontsize_)
         plt.xticks(rotation=45)
@@ -319,6 +356,7 @@ class KittiEvalOdom():
         plt.savefig(fig_pdf, bbox_inches='tight', pad_inches=0)
         plt.close(fig)
 
+        # flip
         fig = plt.figure()
         ax = plt.gca()
         ax.set_aspect('equal')
@@ -333,13 +371,16 @@ class KittiEvalOdom():
             pos_xz = np.asarray(pos_xz)
             plt.plot(pos_xz[:, 1],  pos_xz[:, 0], label=key)
 
+        frame_idx_list = sorted(poses_dict["Ours"].keys())
+        pose_first=poses_dict["Ours"][frame_idx_list[0]]
+        plt.plot( pose_first[0,0], -1*pose_first[0,1], "k+",markersize=12,markeredgewidth=2)
         plt.legend( loc='upper right', prop={'size': fontsize_}) #
         plt.xticks(fontsize=fontsize_)
         plt.xticks(rotation=45)
         plt.yticks(fontsize=fontsize_)
         plt.xlabel('x (m)', fontsize=fontsize_)
         plt.ylabel('y (m)', fontsize=fontsize_)
-        fig.set_size_inches(10, 10)
+        fig.set_size_inches(14, 14)
         png_title = "sequence_{:02}".format(seq)
         fig_pdf = self.plot_path_dir + "/" + png_title + "_flip.pdf"
         plt.savefig(fig_pdf, bbox_inches='tight', pad_inches=0)
@@ -473,17 +514,24 @@ class KittiEvalOdom():
         trans_errors_y = []
         rot_errors_ez = []
         trans_errors_squared = []
+        trans_velocities = []
+        rot_velocities = []
+        trans_acceleration = []
+        rot_acceleration = []
+        dt_spinning_rate = 1.0/4.0 #For Navtech radar
+
         for i in list(pred.keys())[:-1]:
             gt1 = gt[i]
             gt2 = gt[i+1]
             gt_rel = np.linalg.inv(gt1) @ gt2
-
             pred1 = pred[i]
             pred2 = pred[i+1]
             pred_rel = np.linalg.inv(pred1) @ pred2
             rel_err = np.linalg.inv(gt_rel) @ pred_rel
-
-           
+            vel = np.sqrt(gt_rel[0, 3]*gt_rel[0, 3] + gt_rel[1, 3]*gt_rel[1, 3])/dt_spinning_rate
+            trans_velocities.append(vel)
+            rot_vel = (math.atan2(gt_rel[1,0], gt_rel[0,0])*180/math.pi)/dt_spinning_rate
+            rot_velocities.append(rot_vel)
             trans_errors_x.append(rel_err[0, 3])
             trans_errors_y.append(rel_err[1, 3])
             rotmat = rel_err[0:3, 0:3]
@@ -492,6 +540,13 @@ class KittiEvalOdom():
             trans_errors_abs.append(self.translation_error(rel_err))
             trans_errors_squared.append(self.squared_translation_error(rel_err))
             rot_errors_abs.append(self.rotation_error(rel_err))
+        for i in range(len(trans_velocities)-1):
+            trans_acc=(trans_velocities[i]-trans_velocities[i+1])/dt_spinning_rate
+            rot_acc=(rot_velocities[i]-rot_velocities[i+1])/dt_spinning_rate
+            trans_acceleration.append(trans_acc)
+            rot_acceleration.append(rot_acc)
+            #print(str(i)+", "+str(len(trans_velocities)-1))
+
         rmse_trans = np.sqrt(np.mean(np.asarray(trans_errors_squared)))
         rpe_trans = np.mean(np.asarray(trans_errors_abs))
         rpe_trans_dev = np.std(np.asarray(trans_errors_abs))
@@ -500,10 +555,14 @@ class KittiEvalOdom():
         bias_x = np.mean(np.asarray(trans_errors_x))
         bias_y = np.mean(np.asarray(trans_errors_y))
         bias_theta = np.mean(np.asarray(rot_errors_ez))
-        savetxt(output_dir+"/_rpe_trans_x.txt", trans_errors_x, delimiter=',')
-        savetxt(output_dir+"/_rpe_trans_x.txt", trans_errors_x, delimiter=',')
-        savetxt(output_dir+"/_rpe_trans_y.txt", trans_errors_y, delimiter=',')
-        savetxt(output_dir+"/_rpe_rot.txt", rot_errors_ez, delimiter=',')
+        savetxt(output_dir+"/rpe_trans_x.txt", trans_errors_x, delimiter=',')
+        savetxt(output_dir+"/rpe_trans_y.txt", trans_errors_y, delimiter=',')
+        savetxt(output_dir+"/rmse_trans_squared.txt", trans_errors_squared, delimiter=',')
+        savetxt(output_dir+"/rpe_rot.txt", rot_errors_ez, delimiter=',')
+        savetxt(output_dir+"/vel_trans.txt", trans_velocities, delimiter=',')
+        savetxt(output_dir+"/vel_rot.txt", rot_velocities, delimiter=',')
+        savetxt(output_dir+"/acceleration_trans.txt", trans_acceleration, delimiter=',')
+        savetxt(output_dir+"/acceleration_rot.txt", rot_acceleration, delimiter=',')
         return rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev, bias_x, bias_y, bias_theta, rmse_trans
 
     def scale_optimization(self, gt, pred):
