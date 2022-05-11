@@ -9,6 +9,7 @@ from numpy import asarray
 from numpy import savetxt
 import math
 
+
 from scipy.spatial.transform import Rotation as R
 
 def scale_lse_solver(X, Y):
@@ -535,8 +536,11 @@ class KittiEvalOdom():
             trans_errors_x.append(rel_err[0, 3])
             trans_errors_y.append(rel_err[1, 3])
             rotmat = rel_err[0:3, 0:3]
-            r = (math.atan2(rotmat[1,0], rel_err[0,0]))*180/math.pi
-            rot_errors_ez.append(r)
+            #r = (math.atan2(rel_err[1,0], rel_err[0,0]))*180/math.pi
+
+            rot_error = R.from_matrix(rotmat)
+            error_euler=rot_error.as_euler('zxy', degrees=True)
+            rot_errors_ez.append(error_euler[2])
             trans_errors_abs.append(self.translation_error(rel_err))
             trans_errors_squared.append(self.squared_translation_error(rel_err))
             rot_errors_abs.append(self.rotation_error(rel_err))
@@ -675,9 +679,14 @@ class KittiEvalOdom():
             print("patss: "+ file_name)
             print("dir: "+ result_dir)
             poses_result = self.load_poses_from_txt(result_dir+"/"+file_name)
+            #for idx in range(len(poses_result)):
+                 #poses_result[idx][2, 3] = 0
 
             #print("poses: "+poses_result)
             poses_gt = self.load_poses_from_txt(self.gt_dir + "/" + file_name)
+            #for idx in range(len(poses_gt)):
+                 #poses_gt[idx][2, 3] = 0
+
             self.result_file_name = result_dir+file_name
 
 
