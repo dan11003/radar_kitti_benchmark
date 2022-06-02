@@ -559,8 +559,8 @@ class KittiEvalOdom():
         bias_x = np.mean(np.asarray(trans_errors_x))
         bias_y = np.mean(np.asarray(trans_errors_y))
         bias_theta = np.mean(np.asarray(rot_errors_ez))
-        bias_test=np.mean(np.fabs(np.asarray(rot_errors_ez)))
-        print(  "theta_bias_test"+str(  bias_test))
+        #bias_test=np.mean(np.fabs(np.asarray(rot_errors_ez)))
+        #print(  "theta_bias_test"+str(  bias_test))
         
         savetxt(output_dir+"/rpe_trans_x.txt", trans_errors_x, delimiter=',')
         savetxt(output_dir+"/rpe_trans_y.txt", trans_errors_y, delimiter=',')
