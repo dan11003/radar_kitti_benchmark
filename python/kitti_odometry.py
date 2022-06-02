@@ -540,7 +540,7 @@ class KittiEvalOdom():
 
             rot_error = R.from_matrix(rotmat)
             error_euler=rot_error.as_euler('zxy', degrees=True)
-            rot_errors_ez.append(error_euler[2])
+            rot_errors_ez.append(error_euler[0])
             trans_errors_abs.append(self.translation_error(rel_err))
             trans_errors_squared.append(self.squared_translation_error(rel_err))
             rot_errors_abs.append(self.rotation_error(rel_err))
@@ -559,6 +559,9 @@ class KittiEvalOdom():
         bias_x = np.mean(np.asarray(trans_errors_x))
         bias_y = np.mean(np.asarray(trans_errors_y))
         bias_theta = np.mean(np.asarray(rot_errors_ez))
+        bias_test=np.mean(np.fabs(np.asarray(rot_errors_ez)))
+        print(  "theta_bias_test"+str(  bias_test))
+        
         savetxt(output_dir+"/rpe_trans_x.txt", trans_errors_x, delimiter=',')
         savetxt(output_dir+"/rpe_trans_y.txt", trans_errors_y, delimiter=',')
         savetxt(output_dir+"/rmse_trans_squared.txt", trans_errors_squared, delimiter=',')

@@ -11,8 +11,8 @@ for method in ${STAMPED_OUTPUT_EVAL_DIR}/*/ ; do
 	line8=`sed '8q;d' ${job}/pars.txt`
 	tmp="${line8#*, }${line45#*, }"
 	echo "${tmp}"
-	    echo "$job"
-		#python3 eval_odom.py --dir $job --force yes #--align 6dof
+	echo "$job"
+	python3 eval_odom.py --dir $job --force yes #--align 6dof
 	done
 	python3  ${merge_script_path} --dir ${method}/ --prefix "rerun_"${tmp}_${current_date}
 done
