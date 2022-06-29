@@ -3,7 +3,7 @@
 
 
 
-export SEQUENCE="/home/daniel/rosbag/CFEAR_EVAL/lidar_eval2/"
+export SEQUENCE="/home/daniel/rosbag/CFEAR_EVAL/lidar_eval2/Riverside03"
 
 mkdir -p $SEQUENCE/est
  python3 eval_odom.py --dir $SEQUENCE --align 6dof

@@ -12,10 +12,10 @@ for method in ${STAMPED_OUTPUT_EVAL_DIR}/*/ ; do
 	tmp="${line8#*, }${line45#*, }"
 	echo "${tmp}"
 	echo "$job"
-	python3 eval_odom.py --dir $job --force yes #--align 6dof
+	python3 eval_odom.py --dir $job --force yes --align 6dof
 	done
 	python3  ${merge_script_path} --dir ${method}/ --prefix "rerun_"${tmp}_${current_date}
 done
 
-#python3  ${merge_script_path} --dir ${STAMPED_OUTPUT_EVAL_DIR}/ --prefix "rerun_"
+python3  ${merge_script_path} --dir ${STAMPED_OUTPUT_EVAL_DIR}/ --prefix "rerun_"
 

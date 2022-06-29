@@ -2,17 +2,20 @@
 
 
 
+#Sequence
 SEQUENCE="2019-01-10-12-32-52-radar-oxford-10k"
+#Folder of estimated trajectories
 DIR="/home/${USER}/Documents/oxford-eval-sequences/${SEQUENCE}/eval/"
 
 
-##### EVALUATE EVERYTHING #####
+##### EVALUATE ALL RUNS IN FOLDER #####
 for d in ${DIR}*; do
    mkdir -p ${d}/est
-   python3 eval_odom.py --dir ${d} --align 6dof
+   python3 eval_odom.py --dir ${d} --align 6dof --force yes
 done
-##### EVALUATE A SINGLE RN #####
 
+
+##### EVALUATE A SINGLE RUN ONLY #####
 #eval_folder="2022-06-02_09:43/" # should be on format   YYYY-MM-DD_HH:MM/
 #d=${DIR}${eval_folder}
 #mkdir -p ${d}/est
