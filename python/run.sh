@@ -1,16 +1,12 @@
 #!/bin/bash
 
 
-
-SEQUENCE="2019-01-10-12-32-52-radar-oxford-10k"
-DIR="/home/${USER}/Documents/oxford-eval-sequences/${SEQUENCE}/eval/"
+path="/home/daniel/Documents/oxford-eval-sequences/2019-01-10-12-32-52-radar-oxford-10k/eval/2022-06-29_15:16/"
 
 
 ##### EVALUATE EVERYTHING #####
-for d in ${DIR}*; do
-   mkdir -p ${d}/est
-   python3 eval_odom.py --dir ${d} --align 6dof
-done
+python3 eval_odom.py --dir ${path} --align 6dof
+
 ##### EVALUATE A SINGLE RN #####
 
 #eval_folder="2022-06-02_09:43/" # should be on format   YYYY-MM-DD_HH:MM/

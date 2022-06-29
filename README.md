@@ -11,6 +11,7 @@ We include several common metrics in evaluating visual odometry, including
 * relative pose error (rotation)
 
 ## Requirement
+ pip install -r requirements.txt
 We recommend using [Anaconda](https://www.anaconda.com/distribution/) for installing the prerequisites.
 
 ```
