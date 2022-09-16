@@ -81,7 +81,8 @@ class KittiEvalOdom():
         vo_eval = KittiEvalOdom()
         vo_eval.eval(gt_pose_txt_dir, result_pose_txt_dir)
     """
-    def __init__(self):
+    def __init__(self,step_size):
+        self.step_size = step_size
         self.lengths = [100, 200, 300, 400, 500, 600, 700, 800]
         self.num_lengths = len(self.lengths)
 
@@ -204,7 +205,7 @@ class KittiEvalOdom():
         """
         err = []
         dist = self.trajectory_distances(poses_gt)
-        self.step_size = 10
+        #self.step_size = 10
 
         for first_frame in range(0, len(poses_gt), self.step_size):
             for i in range(self.num_lengths):
@@ -249,6 +250,7 @@ class KittiEvalOdom():
             err (list list): error information
             file_name (str): txt file for writing errors
         """
+        print("save: "+str(len(err)) + "terms, step size: " + str(self.step_size))
         fp = open(file_name, 'w')
         for i in err:
             line_to_write = " ".join([str(j) for j in i])

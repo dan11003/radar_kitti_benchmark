@@ -20,9 +20,12 @@ parser.add_argument('--force', type=str,
                     choices=['yes', 'no'],
                     default='no',
                     help="do not ask for user input")
+parser.add_argument('--step-size', type=int,
+                    default=10,
+                    help="do not ask for user input")
 args = parser.parse_args()
 
-eval_tool = KittiEvalOdom()
+eval_tool = KittiEvalOdom(args.step_size)
 main_dir = args.dir
 gt_dir = main_dir+"/gt"
 result_dir = main_dir+"/est"
