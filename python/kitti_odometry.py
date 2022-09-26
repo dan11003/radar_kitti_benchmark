@@ -669,7 +669,7 @@ class KittiEvalOdom():
 
         # Create evaluation list
         if seqs is None:
-            available_seqs = sorted(glob(os.path.join(result_dir, "*.txt")))
+            available_seqs = sorted(glob(os.path.join(result_dir, "??.txt")))
             #print(available_seqs)
             self.eval_seqs = [int(i[-6:-4]) for i in available_seqs if i[-6:-4] in seq_list]
         else:
