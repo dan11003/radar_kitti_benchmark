@@ -23,6 +23,9 @@ parser.add_argument('--force', type=str,
 parser.add_argument('--step-size', type=int,
                     default=10,
                     help="do not ask for user input")
+parser.add_argument('--reg_expression', type=str,
+                    default="??",
+                    help="regex for .txt files")                    
 args = parser.parse_args()
 
 eval_tool = KittiEvalOdom(args.step_size)
@@ -43,6 +46,7 @@ if continue_flag == "y":
         result_dir,
         alignment=args.align,
         seqs=args.seqs,
+        reg_expression=args.reg_expression
         )
 else:
     print("Double check the path!")
