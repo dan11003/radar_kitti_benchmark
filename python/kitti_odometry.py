@@ -627,7 +627,8 @@ class KittiEvalOdom():
 
     def eval(self, gt_dir, result_dir, 
                 alignment=None,
-                seqs=None):
+                seqs=None,
+                reg_expression="??"):
         """Evaulate required/available sequences
         Args:
             gt_dir (str): ground truth poses txt files directory
@@ -640,6 +641,7 @@ class KittiEvalOdom():
             seqs (list/None):
                 - None: Evalute all available seqs in result_dir
                 - list: list of sequence indexs to be evaluated
+            reg_expression (str) : regular expresion used to select .txt files in result dir if seqs=None
         """
         seq_list = ["{:02}".format(i) for i in range(0, 35)]
 
@@ -669,7 +671,7 @@ class KittiEvalOdom():
 
         # Create evaluation list
         if seqs is None:
-            available_seqs = sorted(glob(os.path.join(result_dir, "*.txt")))
+            available_seqs = sorted(glob(os.path.join(result_dir, reg_expression+".txt")))
             #print(available_seqs)
             self.eval_seqs = [int(i[-6:-4]) for i in available_seqs if i[-6:-4] in seq_list]
         else:
