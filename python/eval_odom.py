@@ -1,5 +1,5 @@
 # Copyright (C) Huangying Zhan 2019. All rights reserved.
-
+#!/usr/bin/env python3
 import argparse
 
 from kitti_odometry import KittiEvalOdom

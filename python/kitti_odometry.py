@@ -1,5 +1,5 @@
 # Copyright (C) Huangying Zhan 2019. All rights reserved.
-
+#!/usr/bin/env python3
 import copy
 from matplotlib import pyplot as plt
 import numpy as np
@@ -11,7 +11,11 @@ import math
 
 
 from scipy.spatial.transform import Rotation as R
-
+def rot2eul(R):
+    beta = -np.arcsin(R[2,0])
+    alpha = np.arctan2(R[2,1]/np.cos(beta),R[2,2]/np.cos(beta))
+    gamma = np.arctan2(R[1,0]/np.cos(beta),R[0,0]/np.cos(beta))
+    return np.array((alpha, beta, gamma))
 def scale_lse_solver(X, Y):
     """Least-sqaure-error solver
     Compute optimal scaling factor so that s(X)-Y is minimum
@@ -499,7 +503,8 @@ class KittiEvalOdom():
             errors.append(np.sqrt(np.sum(align_err ** 2)))
         ate = np.sqrt(np.mean(np.asarray(errors) ** 2)) 
         return ate
-    
+
+
     def compute_RPE(self, gt, pred, output_dir):
         """Compute RPE
         Args:
@@ -540,9 +545,12 @@ class KittiEvalOdom():
             rotmat = rel_err[0:3, 0:3]
             #r = (math.atan2(rel_err[1,0], rel_err[0,0]))*180/math.pi
 
-            rot_error = R.from_matrix(rotmat)
-            error_euler=rot_error.as_euler('zxy', degrees=True)
+            #rot_error = R.from_matrix(rotmat)
+            #error_euler=rot_error.as_euler('zxy', degrees=True)
+            error_euler=rot2eul(rotmat)
             rot_errors_ez.append(error_euler[0])
+            
+            
             trans_errors_abs.append(self.translation_error(rel_err))
             trans_errors_squared.append(self.squared_translation_error(rel_err))
             rot_errors_abs.append(self.rotation_error(rel_err))
