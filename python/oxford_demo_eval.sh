@@ -10,8 +10,10 @@ DIR="/home/${USER}/Documents/oxford-eval-sequences/${SEQUENCE}/eval/"
 
 ##### EVALUATE ALL RUNS IN FOLDER #####
 for d in ${DIR}*; do
+   echo "-------------------------------------------"
    mkdir -p ${d}/est
    python3 eval_odom.py --dir ${d} --force yes #--align 6dof 
+   echo "-------------------------------------------"
 done
 
 
