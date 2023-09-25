@@ -1,11 +1,11 @@
 #!/bin/bash
 
 
-path="/home/daniel/rosbag/Mulran/trash_eval/2022-08-17_13:44"
+path="/media/daniel/m2_ssd/BAG_LOCATION/TBV_Eval/oxford/2019-01-16-11-53-11-radar-oxford-10k"
 
 
 ##### EVALUATE EVERYTHING #####
-python3 eval_odom.py --dir ${path} --align 6dof --step-size 1
+python3 eval_odom.py --dir ${path} --align 6dof --step-size 20
 
 ##### EVALUATE A SINGLE RN #####
 
