@@ -253,7 +253,7 @@ class KittiEvalOdom():
         print("save: "+str(len(err)) + "terms, step size: " + str(self.step_size))
         fp = open(file_name, 'w')
         for i in err:
-            line_to_write = " ".join([str(j) for j in i])
+            line_to_write = " ".join(["{:.4f}".format(j) for j in i])
             fp.writelines(line_to_write+"\n")
         fp.close()
 
@@ -325,7 +325,7 @@ class KittiEvalOdom():
         fig.set_size_inches(10, 10)
         png_title = "sequence_{:02}".format(seq)
         fig_pdf = self.plot_path_dir + "/" + png_title + "_orig.pdf"
-        plt.savefig(fig_pdf, bbox_inches='tight', pad_inches=0)
+        # plt.savefig(fig_pdf, bbox_inches='tight', pad_inches=0)
         plt.close(fig)
 
 
@@ -386,8 +386,8 @@ class KittiEvalOdom():
         fig.set_size_inches(14, 14)
         png_title = "sequence_{:02}".format(seq)
         fig_pdf = self.plot_path_dir + "/" + png_title + "_flip.pdf"
-        plt.savefig(fig_pdf, bbox_inches='tight', pad_inches=0)
-        plt.close(fig)
+        # plt.savefig(fig_pdf, bbox_inches='tight', pad_inches=0)
+        # plt.close(fig)
 
     def plot_error(self, avg_segment_errs, seq):
         """Plot per-length error
@@ -564,14 +564,15 @@ class KittiEvalOdom():
         #bias_test=np.mean(np.fabs(np.asarray(rot_errors_ez)))
         #print(  "theta_bias_test"+str(  bias_test))
         
-        savetxt(output_dir+"/rpe_trans_x.txt", trans_errors_x, delimiter=',')
-        savetxt(output_dir+"/rpe_trans_y.txt", trans_errors_y, delimiter=',')
-        savetxt(output_dir+"/rmse_trans_squared.txt", trans_errors_squared, delimiter=',')
-        savetxt(output_dir+"/rpe_rot.txt", rot_errors_ez, delimiter=',')
-        savetxt(output_dir+"/vel_trans.txt", trans_velocities, delimiter=',')
-        savetxt(output_dir+"/vel_rot.txt", rot_velocities, delimiter=',')
-        savetxt(output_dir+"/acceleration_trans.txt", trans_acceleration, delimiter=',')
-        savetxt(output_dir+"/acceleration_rot.txt", rot_acceleration, delimiter=',')
+        savetxt(output_dir+"/rpe_trans_x.txt", trans_errors_x, fmt='%.3f', delimiter=',')
+        savetxt(output_dir+"/rpe_trans_y.txt", trans_errors_y, fmt='%.3f', delimiter=',')
+        # Daniel - enable if full evaluation is rquired, otherwise keep disabled as it takes up space
+        #savetxt(output_dir+"/rmse_trans_squared.txt", trans_errors_squared, fmt='%.5f', delimiter=',')
+        #savetxt(output_dir+"/rpe_rot.txt", rot_errors_ez, fmt='%.5f', delimiter=',')
+        #savetxt(output_dir+"/vel_trans.txt", trans_velocities, fmt='%.3f', delimiter=',')
+        #savetxt(output_dir+"/vel_rot.txt", rot_velocities, fmt='%.4f', delimiter=',')
+        #savetxt(output_dir+"/acceleration_trans.txt", trans_acceleration, fmt='%.4f', delimiter=',')
+        #savetxt(output_dir+"/acceleration_rot.txt", rot_acceleration, fmt='%.4f', delimiter=',')
         return rpe_trans, rpe_rot, rpe_trans_dev, rpe_rot_dev, bias_x, bias_y, bias_theta, rmse_trans
 
     def scale_optimization(self, gt, pred):
